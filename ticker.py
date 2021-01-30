@@ -17,8 +17,7 @@ class Ticker(commands.Cog):
             activity=discord.Game(self.ticker_messages[self.index % len(self.ticker_messages)]))
         if self.index % len(self.ticker_messages) == 0:
             self.index = 0
-        else:
-            self.index += 1
+        self.index += 1
 
     @ticker_loop.before_loop
     async def before_ticker_loop(self):
