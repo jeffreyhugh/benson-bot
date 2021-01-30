@@ -26,4 +26,4 @@ class Shitposter(commands.Cog):
                     message.channel.id in self.meme_channels or message.guild is None):
                 await message.add_reaction(self.arch_emoji)
 
-        await self.bot.process_commands(message)
+        # await self.bot.process_commands(message)
