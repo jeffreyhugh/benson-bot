@@ -1,5 +1,6 @@
 import datetime
 import sqlite3
+import asyncio
 
 import discord
 from discord.ext import commands, tasks
@@ -181,3 +182,8 @@ class DutyManager(commands.Cog):
     @daily_digest.before_loop
     async def before_daily_digest(self):
         await self.bot.wait_until_ready()
+        while True:
+            now = datetime.datetime.now()
+            if now.hour == 0:  # running on a host in ET, midnight ET = 10pm MT
+                break
+            await asyncio.sleep(300)
