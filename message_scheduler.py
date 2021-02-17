@@ -95,7 +95,7 @@ class MessageScheduler(commands.Cog):
         #   0      1              2
 
         for m in messages:
-            chan = self.bot.get_guild(self.cseguild).get_channel(m[1])
+            chan = self.bot.get_guild(self.cseguild).get_channel(int(m[1]))
             if chan is None:
                 continue
 
