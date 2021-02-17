@@ -21,6 +21,8 @@ class MessageScheduler(commands.Cog):
                         target_channel TEXT,
                         finished INTEGER DEFAULT 0)''')
 
+        self.check_for_messages.start()
+
     @commands.command(name="schedule-with-delta")
     @commands.is_owner()
     async def _schedule_with_delta(self, ctx, delta="", target="", message=""):
