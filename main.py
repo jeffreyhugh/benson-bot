@@ -7,6 +7,7 @@ from memeail import ProblemOfTheDay
 from shitposter import Shitposter
 from ticker import Ticker
 from timers import CSE107Timer, CSE113Timer
+from message_scheduler import MessageScheduler
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
     bot.add_cog(CSE113Timer(bot))
     bot.add_cog(CSE107Timer(bot))
     bot.add_cog(DutyManager(bot))
+    bot.add_cog(MessageScheduler(bot))
 
     # Professional
     bot.add_cog(ProblemOfTheDay(bot))

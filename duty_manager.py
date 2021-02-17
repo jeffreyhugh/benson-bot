@@ -27,10 +27,10 @@ class DutyManager(commands.Cog):
         self.role_helpme = 751581791147524119
         self.digestchannel = 797186419142557737
 
-        self.conn = sqlite3.connect("duty.db")
+        self.conn = sqlite3.connect("hamdy.db")
         self.c = self.conn.cursor()
         self.c.execute('''CREATE TABLE IF NOT EXISTS duty (
-                        id integer PRIMARY KEY, 
+                        id INTEGER PRIMARY KEY, 
                         member_id TEXT NOT NULL, 
                         on_duty_at FLOAT, 
                         off_duty_at FLOAT, 
