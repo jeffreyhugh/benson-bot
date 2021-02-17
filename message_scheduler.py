@@ -23,7 +23,7 @@ class MessageScheduler(commands.Cog):
 
     @commands.command(name="schedule-with-delta")
     @commands.is_owner()
-    async def _schedule_with_delta(self, ctx, delta=0, target=0, message=""):
+    async def _schedule_with_delta(self, ctx, delta="", target="", message=""):
         """Schedule a message to be sent at some point in the future relative to the current time."""
         if delta == 0 or target == 0 or message == "":
             await ctx.send("Missing one or more required arguments. For help, type `!!help`")
@@ -46,7 +46,7 @@ class MessageScheduler(commands.Cog):
 
     @commands.command(name="schedule-at")
     @commands.is_owner()
-    async def _schedule_at(self, ctx, t="", target=0, message=""):
+    async def _schedule_at(self, ctx, t="", target="", message=""):
         """Schedule a message to be sent at some point in the future."""
         if t == "" or target == 0 or message == "":
             await ctx.send("Missing one or more required arguments. For help, type `!!help`")
