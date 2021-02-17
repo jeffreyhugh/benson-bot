@@ -102,7 +102,7 @@ class MessageScheduler(commands.Cog):
             if chan is None:
                 continue
 
-            chan.send(m[2])
+            await chan.send(m[2])
 
             self.c.execute('''UPDATE messages
                             SET finished=1
