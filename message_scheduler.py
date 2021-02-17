@@ -88,6 +88,7 @@ class MessageScheduler(commands.Cog):
 
     @tasks.loop(minutes=5.0)
     async def check_for_messages(self):
+        print("Checking for messages at {}".format(datetime.datetime.now()))
         now = datetime.datetime.now().timestamp()
         self.c.execute('''SELECT id, target_channel, message FROM messages WHERE finished = 0 AND send_at < ?''', [now])
         messages = self.c.fetchall()

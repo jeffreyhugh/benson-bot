@@ -158,6 +158,7 @@ class DutyManager(commands.Cog):
     @tasks.loop(hours=24.0)
     async def daily_digest(self):
         """Send a daily digest of who all marked themselves on-duty"""
+        print("Sending daily duty digest at {}".format(datetime.datetime.now()))
         prev24 = (datetime.datetime.now() - datetime.timedelta(hours=24.0)).timestamp()
         self.c.execute('''SELECT * FROM duty WHERE on_duty_at > ?''', [prev24])
         all_onduty = self.c.fetchall()
