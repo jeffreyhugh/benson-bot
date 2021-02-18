@@ -1,6 +1,7 @@
 import datetime
 import sqlite3
 import asyncio
+import pytz
 
 import discord
 from discord.ext import commands, tasks
@@ -27,6 +28,8 @@ class DutyManager(commands.Cog):
         self.cseguild = 573576119819829249
         self.role_helpme = 751581791147524119
         self.digestchannel = 797186419142557737
+
+        self.mt = pytz.timezone("America/Denver")
 
         self.conn = sqlite3.connect("hamdy.db")
         self.c = self.conn.cursor()
@@ -167,14 +170,14 @@ class DutyManager(commands.Cog):
 
         e = discord.Embed(title="Daily Duty Digest (past 24 hours)", description="", color=discord.Color(16712762))
         for thing in all_onduty:
-            if thing[5] is not None:
+            if thing[5] is not None:  # Marked by someone else
                 remark = "<@{}> was marked on-duty by <@{}> at {} for {} minutes and was marked off-duty at {} [link]({})\n".format(
-                    thing[1], thing[5], datetime.datetime.fromtimestamp(thing[2]).strftime("%H:%M"),
-                    (thing[3] - thing[2]) / 60, datetime.datetime.fromtimestamp(thing[4]).strftime("%H:%M"), thing[6])
+                    thing[1], thing[5], datetime.datetime.fromtimestamp(thing[2], tz=self.mt).strftime("%H:%M"),
+                    (thing[3] - thing[2]) / 60, datetime.datetime.fromtimestamp(thing[4], tz=self.mt).strftime("%H:%M"), thing[6])
             else:
                 remark = "<@{}> was marked on-duty at {} for {} minutes and was marked off-duty at {} [link]({})\n".format(
-                    thing[1], datetime.datetime.fromtimestamp(thing[2]).strftime("%H:%M"),
-                    (thing[3] - thing[2]) / 60, datetime.datetime.fromtimestamp(thing[4]).strftime("%H:%M"), thing[6])
+                    thing[1], datetime.datetime.fromtimestamp(thing[2], tz=self.mt).strftime("%H:%M"),
+                    (thing[3] - thing[2]) / 60, datetime.datetime.fromtimestamp(thing[4], tz=self.mt).strftime("%H:%M"), thing[6])
 
             e.description += remark
 
@@ -184,7 +187,7 @@ class DutyManager(commands.Cog):
     async def before_daily_digest(self):
         await self.bot.wait_until_ready()
         while True:
-            now = datetime.datetime.now()
-            if now.hour == 0:  # running on a host in ET, midnight ET = 10pm MT
+            now = datetime.datetime.now(tz=self.mt)
+            if now.hour == 22:
                 break
             await asyncio.sleep(300)

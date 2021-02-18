@@ -6,7 +6,7 @@ class Ticker(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.index = 0
-        self.ticker_messages = ["TAs: use !!offduty", "(╯°□°）╯︵ ┻━┻", "Benson is cool", "return to monke"]
+        self.ticker_messages = ["TAs: use !!offduty", "no proposal, no waifu", "Benson is cool"]
         self.original_messages = self.ticker_messages
 
         self.ticker_loop.start()
