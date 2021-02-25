@@ -83,7 +83,7 @@ class Playground(commands.Cog):
                     break
 
             if was_killed:
-                await ctx.send("<@{}> killed".format(ctx.author.id))
+                await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
             else:
                 with open("playground/{}.out".format(ctx.message.id)) as f:
                     output = f.read()
