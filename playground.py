@@ -1,13 +1,11 @@
 import asyncio
 import os
 import threading
-import time
 
 import discord
 from discord.ext import commands
 import re
 import docker
-import tarfile
 
 
 def get_logs_from_container(container, save_name):
@@ -182,6 +180,87 @@ class Playground(commands.Cog):
 
     @_c.error
     async def _c_error(self, ctx, error):
+        if isinstance(error, commands.errors.MaxConcurrencyReached):
+            await ctx.message.add_reaction("❌")
+            await ctx.send("You can only run one instance of this command at a time.")
+        else:
+            raise error
+
+    @commands.command(name="go", aliases=["golang"])
+    @commands.max_concurrency(1, commands.BucketType.user, wait=False)
+    async def _go(self, ctx):
+        """Execute a Go snippet and post the result."""
+        async with ctx.typing():
+            r = re.compile("```(?:golang|go)([^^]*?)```")
+            match = r.search(ctx.message.content)
+            if match:
+                code = match.group(1)
+            else:
+                await ctx.message.add_reaction("❌")
+                await ctx.send("Invalid syntax. Please use a Go code block (` ```go`).")
+                return
+
+            await ctx.message.add_reaction("⏳")
+
+            os.makedirs("playground", exist_ok=True)
+            with open("playground/{}.go".format(ctx.message.id), mode="w") as f:
+                f.write(code)
+
+            exited_with_error = False
+
+            # Build and start container
+            self.dockerHost.images.build(path="./",
+                                         dockerfile="dockerfiles/go-Dockerfile",
+                                         buildargs={"MESSAGE_ID": str(ctx.message.id)},
+                                         tag="benson/" + str(ctx.message.id),
+                                         forcerm=True)
+
+            container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
+                                                       name=str(ctx.message.id),
+                                                       auto_remove=False,
+                                                       stdout=True,
+                                                       stderr=True,
+                                                       detach=True,
+                                                       cpu_shares=1000,  # def. 1024, this should make it low priority
+                                                       mem_limit="512m")
+            # storage_opt={"size": "1G"})
+
+            t = threading.Thread(target=get_logs_from_container,
+                                 name=str(ctx.message.id),
+                                 args=(container, ctx.message.id))
+            t.daemon = True
+            t.start()
+
+            os.remove("playground/{}.go".format(ctx.message.id))
+
+            time_running = 0
+            was_killed = False
+
+            while not os.path.exists("playground/{}.out".format(ctx.message.id)):
+                await asyncio.sleep(1)
+                time_running += 1
+                if time_running > 45:
+                    container.kill()
+                    was_killed = True
+                    break
+
+            if was_killed:
+                await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
+            else:
+                with open("playground/{}.out".format(ctx.message.id)) as f:
+                    output = f.read()
+                await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
+                               file=discord.File("playground/{}.out".format(ctx.message.id)))
+
+            try:
+                os.remove("playground/{}.out".format(ctx.message.id))
+            except FileNotFoundError:
+                pass
+
+        return
+
+    @_go.error
+    async def _go_error(self, ctx, error):
         if isinstance(error, commands.errors.MaxConcurrencyReached):
             await ctx.message.add_reaction("❌")
             await ctx.send("You can only run one instance of this command at a time.")

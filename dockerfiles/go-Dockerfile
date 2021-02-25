@@ -1,0 +1,10 @@
+FROM golang:1.16.0-alpine3.13
+
+ARG MESSAGE_ID
+
+WORKDIR /usr/src/app
+
+COPY ./playground/$MESSAGE_ID.go ./main.go
+
+RUN go build
+CMD [ "./main" ]
