@@ -58,9 +58,14 @@ class Playground(commands.Cog):
                                                        auto_remove=False,
                                                        stdout=True,
                                                        stderr=True,
-                                                       detach=True)
+                                                       detach=True,
+                                                       cpu_shares=1000,  # def. 1024, this should make it low priority
+                                                       mem_limit="512m",
+                                                       storage_opt={"size": "1G"})
 
-            t = threading.Thread(target=get_logs_from_container, name=str(ctx.message.id), args=(container, ctx.message.id))
+            t = threading.Thread(target=get_logs_from_container,
+                                 name=str(ctx.message.id),
+                                 args=(container, ctx.message.id))
             t.daemon = True
             t.start()
 
