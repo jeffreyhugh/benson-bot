@@ -29,7 +29,7 @@ class Playground(commands.Cog):
     async def _py(self, ctx):
         """Execute a Python snippet and post the result."""
         async with ctx.typing():
-            r = re.compile("```(?:python|py)([^.]*?)```")
+            r = re.compile("```(?:python|py)([^^]*?)```")
             match = r.search(ctx.message.content)
             if match:
                 code = match.group(1)
@@ -60,8 +60,8 @@ class Playground(commands.Cog):
                                                        stderr=True,
                                                        detach=True,
                                                        cpu_shares=1000,  # def. 1024, this should make it low priority
-                                                       mem_limit="512m",
-                                                       storage_opt={"size": "1G"})
+                                                       mem_limit="512m")
+                                                       # storage_opt={"size": "1G"})
 
             t = threading.Thread(target=get_logs_from_container,
                                  name=str(ctx.message.id),
@@ -71,16 +71,29 @@ class Playground(commands.Cog):
 
             os.remove("playground/{}.py".format(ctx.message.id))
 
+            time_running = 0
+            was_killed = False
+
             while not os.path.exists("playground/{}.out".format(ctx.message.id)):
                 await asyncio.sleep(1)
+                time_running += 1
+                if time_running > 45:
+                    container.kill()
+                    was_killed = True
+                    break
 
-            with open("playground/{}.out".format(ctx.message.id)) as f:
-                output = f.read()
+            if was_killed:
+                await ctx.send("<@{}> killed".format(ctx.author.id))
+            else:
+                with open("playground/{}.out".format(ctx.message.id)) as f:
+                    output = f.read()
+                await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
+                               file=discord.File("playground/{}.out".format(ctx.message.id)))
 
-            await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
-                           file=discord.File("playground/{}.out".format(ctx.message.id)))
-
-            os.remove("playground/{}.out".format(ctx.message.id))
+            try:
+                os.remove("playground/{}.out".format(ctx.message.id))
+            except FileNotFoundError:
+                pass
 
         return
 

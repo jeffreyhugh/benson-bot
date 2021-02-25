@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 
 COPY ./playground/$MESSAGE_ID.py ./main.py
 
-CMD [ "timeout", "30s", "python", "./main.py" ]
+CMD [ "timeout", "-s", "KILL", "30s", "python", "./main.py" ]
