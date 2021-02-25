@@ -6,3 +6,5 @@ launcher.sh
 *.db
 __pycache__
 __pycache__/*
+playground
+playground/*

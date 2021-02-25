@@ -19,7 +19,7 @@ class Playground(commands.Cog):
         async with ctx.typing():
             code = ""
 
-            r = re.compile("```py(.*?)```")
+            r = re.compile("```(?:py|python)([^.]*?)```")
             match = r.search(ctx.message.content)
             if match:
                 code = match.group(1)
@@ -33,18 +33,35 @@ class Playground(commands.Cog):
             with tarfile.open("playground/{}.tar".format(ctx.message.id), mode="w") as tar:
                 tar.add("playground/{}.py".format(ctx.message.id))
 
-            data = open("playground/{}.py".format(ctx.message.id), "rb").read()
+            data = open("playground/{}.tar".format(ctx.message.id), "rb").read()
 
-            # Start container
-            container = self.dockerHost.containers.create("python:3.9.2-alpine3.13", name=str(ctx.message.id))
-            container.put_archive("/tmp", data)
+            # Build and start container
+            image = self.dockerHost.images.build(path="./",
+                                                 dockerfile="dockerfiles/python-Dockerfile",
+                                                 buildargs={"MESSAGE_ID": str(ctx.message.id)},
+                                                 tag="benson/" + str(ctx.message.id),
+                                                 forcerm=True)
+            output = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
+                                                    name=str(ctx.message.id),
+                                                    auto_remove=True)
+
+            # container.put_archive("/tmp", data)
 
             # Returns tuple of exit_code, output
-            exit_and_output = container.exec_run(["timeout", "60s", "python3.8", "{}.py".format(ctx.message.id)])
+            #while True:
+            #    try:
+            #        exit_and_output = container.exec_run(["python3", "/tmp/{}.py".format(ctx.message.id)])
+            #    except docker.errors.APIError:
+            #        continue
+            #    finally:
+            #        break
+
 
             # Cleanup
-            container.remove()
+            #container.kill()
+            #container.remove()
+            os.remove("playground/{}.*".format(ctx.message.id))
 
-            with open("playground/{}.out".format(ctx.message.id), mode="w") as f:
-                f.write(exit_and_output[1])
-                await ctx.send("exit {}: ```\n{}```".format(exit_and_output[0], exit_and_output[1][0:800]), file=f)
+            with open("playground/{}.out".format(ctx.message.id), mode="wb") as f:
+                f.write(output)
+                await ctx.send("__**Python 3.9**__ ```{}```".format(bytes.decode(output)), file=discord.File("playground/{}.out".format(ctx.message.id)))

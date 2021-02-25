@@ -1,0 +1,9 @@
+FROM python:3.9.2-alpine3.13
+
+ARG MESSAGE_ID
+
+WORKDIR /usr/src/app
+
+COPY ./playground/$MESSAGE_ID.py ./main.py
+
+CMD [ "timeout", "30s", "python", "./main.py" ]
