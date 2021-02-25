@@ -13,128 +13,50 @@ def get_logs_from_container(container, save_name):
 
     output = container.logs()
 
-    with open("playground/{}.out".format(save_name), mode="wb") as f:
+    with open("playground/{}.log".format(save_name), mode="wb") as f:
         f.write(output)
 
 
-# TODO refactor as one big exec command
-# TODO use code block syntax to determine language
 class Playground(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.dockerHost = docker.from_env()
 
-    @commands.command(name="py", aliases=["python"])
+    @commands.command(name="exec", aliases=["execute", "eval", "evaluate"])
     @commands.max_concurrency(1, commands.BucketType.user, wait=False)
-    async def _py(self, ctx):
-        """Execute a Python snippet and post the result."""
+    async def _exec(self, ctx):
+        """Execute a code snippet and post the result. Supports Python, C, and Go."""
         async with ctx.typing():
-            r = re.compile("```(?:python|py)([^^]*?)```")
-            match = r.search(ctx.message.content)
-            if match:
-                code = match.group(1)
-            else:
-                await ctx.message.add_reaction("❌")
-                await ctx.send("Invalid syntax. Please use a Python code block (` ```py`).")
-                return
-
-            await ctx.message.add_reaction("⏳")
-
-            os.makedirs("playground", exist_ok=True)
-            with open("playground/{}.py".format(ctx.message.id), mode="w") as f:
-                f.write(code)
-
-            exited_with_error = False
-
-            # Build and start container
-            self.dockerHost.images.build(path="./",
-                                         dockerfile="dockerfiles/python-Dockerfile",
-                                         buildargs={"MESSAGE_ID": str(ctx.message.id)},
-                                         tag="benson/" + str(ctx.message.id),
-                                         forcerm=True)
-
-            container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
-                                                       name=str(ctx.message.id),
-                                                       auto_remove=False,
-                                                       stdout=True,
-                                                       stderr=True,
-                                                       detach=True,
-                                                       cpu_shares=1000,  # def. 1024, this should make it low priority
-                                                       mem_limit="512m")
-                                                       # storage_opt={"size": "1G"})
-
-            t = threading.Thread(target=get_logs_from_container,
-                                 name=str(ctx.message.id),
-                                 args=(container, ctx.message.id))
-            t.daemon = True
-            t.start()
-
-            os.remove("playground/{}.py".format(ctx.message.id))
-
-            time_running = 0
-            was_killed = False
-
-            while not os.path.exists("playground/{}.out".format(ctx.message.id)):
-                await asyncio.sleep(1)
-                time_running += 1
-                if time_running > 45:
-                    container.kill()
-                    was_killed = True
+            code = ""
+            lang = ""
+            regexes = ["```(?:python|py)([^^]*?)```", "```(?:c)([^^]*?)```", "```(?:golang|go)([^^]*?)```"]
+            langs = ["py", "c", "go"]
+            i = 0
+            while i < len(regexes):
+                r = re.compile(regexes[i])
+                match = r.search(ctx.message.content)
+                if match:
+                    code = match.group(1)
+                    lang = langs[i]
                     break
 
-            if was_killed:
-                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                i += 1
+
+            if lang == "" or code == "":
                 await ctx.message.add_reaction("❌")
-                await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
-            else:
-                with open("playground/{}.out".format(ctx.message.id)) as f:
-                    output = f.read()
-                await ctx.message.remove_reaction("⏳", ctx.guild.me)
-                await ctx.message.add_reaction("✅")
-                await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
-                               file=discord.File("playground/{}.out".format(ctx.message.id)))
-
-            try:
-                os.remove("playground/{}.out".format(ctx.message.id))
-            except FileNotFoundError:
-                pass
-
-        return
-
-    @_py.error
-    async def _py_error(self, ctx, error):
-        if isinstance(error, commands.errors.MaxConcurrencyReached):
-            await ctx.message.add_reaction("❌")
-            await ctx.send("You can only run one instance of this command at a time.")
-        else:
-            raise error
-
-    @commands.command(name="c")
-    @commands.max_concurrency(1, commands.BucketType.user, wait=False)
-    async def _c(self, ctx):
-        """Execute a C snippet and post the result."""
-        async with ctx.typing():
-            r = re.compile("```(?:c)([^^]*?)```")
-            match = r.search(ctx.message.content)
-            if match:
-                code = match.group(1)
-            else:
-                await ctx.message.add_reaction("❌")
-                await ctx.send("Invalid syntax. Please use a C code block (` ```c`).")
+                await ctx.send("Unknown language. Please use a formatted code block (e.g. ` ```c`).")
                 return
 
             await ctx.message.add_reaction("⏳")
 
             os.makedirs("playground", exist_ok=True)
-            with open("playground/{}.c".format(ctx.message.id), mode="w") as f:
+            with open("playground/{}.{}".format(ctx.message.id, lang), mode="w") as f:
                 f.write(code)
-
-            exited_with_error = False
 
             # Build and start container
             try:
                 self.dockerHost.images.build(path="./",
-                                             dockerfile="dockerfiles/c-Dockerfile",
+                                             dockerfile="dockerfiles/{}-Dockerfile".format(lang),
                                              buildargs={"MESSAGE_ID": str(ctx.message.id)},
                                              tag="benson/" + str(ctx.message.id),
                                              forcerm=True)
@@ -143,7 +65,7 @@ class Playground(commands.Cog):
                 await ctx.message.add_reaction("❌")
                 await ctx.send("Your code failed to compile. Please double-check syntax and try again.")
 
-                os.remove("playground/{}.c".format(ctx.message.id))
+                os.remove("playground/{}.{}".format(ctx.message.id, lang))
                 return
 
             container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
@@ -152,9 +74,8 @@ class Playground(commands.Cog):
                                                        stdout=True,
                                                        stderr=True,
                                                        detach=True,
-                                                       cpu_shares=1000,  # def. 1024, this should make it low priority
+                                                       cpu_shares=1000,  # default 1024, make it lower priority
                                                        mem_limit="512m")
-            # storage_opt={"size": "1G"})
 
             t = threading.Thread(target=get_logs_from_container,
                                  name=str(ctx.message.id),
@@ -162,12 +83,12 @@ class Playground(commands.Cog):
             t.daemon = True
             t.start()
 
-            os.remove("playground/{}.c".format(ctx.message.id))
+            os.remove("playground/{}.{}".format(ctx.message.id, lang))
 
             time_running = 0
             was_killed = False
 
-            while not os.path.exists("playground/{}.out".format(ctx.message.id)):
+            while not os.path.exists("playground/{}.log".format(ctx.message.id)):
                 await asyncio.sleep(1)
                 time_running += 1
                 if time_running > 45:
@@ -180,117 +101,24 @@ class Playground(commands.Cog):
                 await ctx.message.add_reaction("❌")
                 await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
             else:
-                with open("playground/{}.out".format(ctx.message.id)) as f:
+                with open("playground/{}.log".format(ctx.message.id)) as f:
                     output = f.read()
                 await ctx.message.remove_reaction("⏳", ctx.guild.me)
                 await ctx.message.add_reaction("✅")
                 await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
-                               file=discord.File("playground/{}.out".format(ctx.message.id)))
+                               file=discord.File("playground/{}.log".format(ctx.message.id)))
 
             try:
-                os.remove("playground/{}.out".format(ctx.message.id))
+                os.remove("playground/{}.log".format(ctx.message.id))
             except FileNotFoundError:
                 pass
 
         return
 
-    @_c.error
-    async def _c_error(self, ctx, error):
+    @_exec.error
+    async def _exec_error(self, ctx, error):
         if isinstance(error, commands.errors.MaxConcurrencyReached):
             await ctx.message.add_reaction("❌")
-            await ctx.send("You can only run one instance of this command at a time.")
-        else:
-            raise error
-
-    @commands.command(name="go", aliases=["golang"])
-    @commands.max_concurrency(1, commands.BucketType.user, wait=False)
-    async def _go(self, ctx):
-        """Execute a Go snippet and post the result."""
-        async with ctx.typing():
-            r = re.compile("```(?:golang|go)([^^]*?)```")
-            match = r.search(ctx.message.content)
-            if match:
-                code = match.group(1)
-            else:
-                await ctx.message.add_reaction("❌")
-                await ctx.send("Invalid syntax. Please use a Go code block (` ```go`).")
-                return
-
-            await ctx.message.add_reaction("⏳")
-
-            os.makedirs("playground", exist_ok=True)
-            with open("playground/{}.go".format(ctx.message.id), mode="w") as f:
-                f.write(code)
-
-            exited_with_error = False
-
-            # Build and start container
-            try:
-                self.dockerHost.images.build(path="./",
-                                             dockerfile="dockerfiles/go-Dockerfile",
-                                             buildargs={"MESSAGE_ID": str(ctx.message.id)},
-                                             tag="benson/" + str(ctx.message.id),
-                                             forcerm=True)
-            except docker.errors.BuildError:
-                await ctx.message.remove_reaction("⏳", ctx.guild.me)
-                await ctx.message.add_reaction("❌")
-                await ctx.send("Your code failed to compile. Please double-check syntax and try again.")
-
-                os.remove("playground/{}.go".format(ctx.message.id))
-                return
-
-            container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
-                                                       name=str(ctx.message.id),
-                                                       auto_remove=False,
-                                                       stdout=True,
-                                                       stderr=True,
-                                                       detach=True,
-                                                       cpu_shares=1000,  # def. 1024, this should make it low priority
-                                                       mem_limit="512m")
-            # storage_opt={"size": "1G"})
-
-            t = threading.Thread(target=get_logs_from_container,
-                                 name=str(ctx.message.id),
-                                 args=(container, ctx.message.id))
-            t.daemon = True
-            t.start()
-
-            os.remove("playground/{}.go".format(ctx.message.id))
-
-            time_running = 0
-            was_killed = False
-
-            while not os.path.exists("playground/{}.out".format(ctx.message.id)):
-                await asyncio.sleep(1)
-                time_running += 1
-                if time_running > 45:
-                    container.kill()
-                    was_killed = True
-                    break
-
-            if was_killed:
-                await ctx.message.remove_reaction("⏳", ctx.guild.me)
-                await ctx.message.add_reaction("❌")
-                await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
-            else:
-                with open("playground/{}.out".format(ctx.message.id)) as f:
-                    output = f.read()
-                await ctx.message.remove_reaction("⏳", ctx.guild.me)
-                await ctx.message.add_reaction("✅")
-                await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
-                               file=discord.File("playground/{}.out".format(ctx.message.id)))
-
-            try:
-                os.remove("playground/{}.out".format(ctx.message.id))
-            except FileNotFoundError:
-                pass
-
-        return
-
-    @_go.error
-    async def _go_error(self, ctx, error):
-        if isinstance(error, commands.errors.MaxConcurrencyReached):
-            await ctx.message.add_reaction("❌")
-            await ctx.send("You can only run one instance of this command at a time.")
+            await ctx.send("You may only run one instance of this command at a time.")
         else:
             raise error
