@@ -1,0 +1,12 @@
+FROM alpine:3.13.2
+
+apk install gcc
+
+ARG MESSAGE_ID
+
+WORKDIR /usr/src/app
+
+COPY ./playground/$MESSAGE_ID.c ./main.c
+
+CMD [ "gcc", "-g", "-Wall", "main.c", "-o", "main" ]
+CMD [ "./main" ]
