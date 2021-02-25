@@ -12,7 +12,7 @@ class Playground(commands.Cog):
         self.bot = bot
         self.dockerHost = docker.from_env()
 
-    @commands.Command(name="py", aliases=["python"])
+    @commands.command(name="py", aliases=["python"])
     @commands.max_concurrency(1, per=commands.BucketType.user, wait=False)
     async def _py(self, ctx):
         """Execute a Python snippet and post the result."""
