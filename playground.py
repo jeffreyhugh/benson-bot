@@ -25,7 +25,11 @@ class Playground(commands.Cog):
     @commands.command(name="exec", aliases=["execute", "eval", "evaluate"])
     @commands.max_concurrency(1, commands.BucketType.user, wait=False)
     async def _exec(self, ctx):
-        """Execute a code snippet and post the result. Supports Python, C, and Go."""
+        """Execute a code snippet and post the result. Supports Python, C, and Go.
+
+        To differentiate between languages, use a syntax-highlighted code block. In Discord, that's three backticks (`) and the language, then a newline.
+
+        https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-"""
         async with ctx.typing():
             code = ""
             lang = ""
