@@ -6,5 +6,5 @@ WORKDIR /usr/src/app
 
 COPY ./playground/$MESSAGE_ID.go ./main.go
 
-RUN go build
+RUN go build main.go
 CMD [ "./main" ]

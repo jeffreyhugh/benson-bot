@@ -83,10 +83,14 @@ class Playground(commands.Cog):
                     break
 
             if was_killed:
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("❌")
                 await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
             else:
                 with open("playground/{}.out".format(ctx.message.id)) as f:
                     output = f.read()
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("✅")
                 await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
                                file=discord.File("playground/{}.out".format(ctx.message.id)))
 
@@ -128,11 +132,19 @@ class Playground(commands.Cog):
             exited_with_error = False
 
             # Build and start container
-            self.dockerHost.images.build(path="./",
-                                         dockerfile="dockerfiles/c-Dockerfile",
-                                         buildargs={"MESSAGE_ID": str(ctx.message.id)},
-                                         tag="benson/" + str(ctx.message.id),
-                                         forcerm=True)
+            try:
+                self.dockerHost.images.build(path="./",
+                                             dockerfile="dockerfiles/c-Dockerfile",
+                                             buildargs={"MESSAGE_ID": str(ctx.message.id)},
+                                             tag="benson/" + str(ctx.message.id),
+                                             forcerm=True)
+            except docker.errors.BuildError:
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("❌")
+                await ctx.send("Your code failed to compile. Please double-check syntax and try again.")
+
+                os.remove("playground/{}.c".format(ctx.message.id))
+                return
 
             container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
                                                        name=str(ctx.message.id),
@@ -164,10 +176,14 @@ class Playground(commands.Cog):
                     break
 
             if was_killed:
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("❌")
                 await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
             else:
                 with open("playground/{}.out".format(ctx.message.id)) as f:
                     output = f.read()
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("✅")
                 await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
                                file=discord.File("playground/{}.out".format(ctx.message.id)))
 
@@ -209,11 +225,19 @@ class Playground(commands.Cog):
             exited_with_error = False
 
             # Build and start container
-            self.dockerHost.images.build(path="./",
-                                         dockerfile="dockerfiles/go-Dockerfile",
-                                         buildargs={"MESSAGE_ID": str(ctx.message.id)},
-                                         tag="benson/" + str(ctx.message.id),
-                                         forcerm=True)
+            try:
+                self.dockerHost.images.build(path="./",
+                                             dockerfile="dockerfiles/go-Dockerfile",
+                                             buildargs={"MESSAGE_ID": str(ctx.message.id)},
+                                             tag="benson/" + str(ctx.message.id),
+                                             forcerm=True)
+            except docker.errors.BuildError:
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("❌")
+                await ctx.send("Your code failed to compile. Please double-check syntax and try again.")
+
+                os.remove("playground/{}.go".format(ctx.message.id))
+                return
 
             container = self.dockerHost.containers.run("benson/" + str(ctx.message.id),
                                                        name=str(ctx.message.id),
@@ -245,10 +269,14 @@ class Playground(commands.Cog):
                     break
 
             if was_killed:
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("❌")
                 await ctx.send("<@{}> Your program was terminated because it took too long".format(ctx.author.id))
             else:
                 with open("playground/{}.out".format(ctx.message.id)) as f:
                     output = f.read()
+                await ctx.message.remove_reaction("⏳", ctx.guild.me)
+                await ctx.message.add_reaction("✅")
                 await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
                                file=discord.File("playground/{}.out".format(ctx.message.id)))
 
