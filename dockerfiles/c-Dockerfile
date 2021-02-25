@@ -1,6 +1,6 @@
 FROM alpine:3.13.2
 
-apk install gcc
+RUN apk install gcc
 
 ARG MESSAGE_ID
 
