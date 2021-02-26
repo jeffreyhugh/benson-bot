@@ -132,7 +132,12 @@ class Playground(commands.Cog):
     @commands.Cog.listener("on_raw_reaction_add")
     async def _on_raw_reaction_add(self, payload):
         guild = self.bot.get_guild(payload.guild_id)
-        message = guild.get_message(payload.message_id)
+        channel = guild.get_channel(payload.channel_id)
+        if channel is not None:
+            message = channel.get_partial_message(payload.message_id)
+        else:
+            # DM
+            return
 
         user_id = payload.user_id
         emoji = payload.emoji
@@ -140,17 +145,19 @@ class Playground(commands.Cog):
         if guild.id != self.cseguild:
             return
 
+        print(emoji.name)
+        if emoji.name != "🗑️":  # Wastebasket
+            return
+
+        message = await message.fetch()  # Convert from partial message to message
         if message.author.id != guild.me.id:
             return
 
-        if emoji != "🗑️":  # Wastebasket
-            return
-
-        target = guild.get_member(user_id)
+        target = await guild.fetch_member(user_id)
         if target is None:
             return
 
         if target in message.mentions:
-            await message.edit("<@{}> [redacted]".format(target.id))
+            await message.edit(content="<@{}> [redacted]".format(target.id))
 
         return
