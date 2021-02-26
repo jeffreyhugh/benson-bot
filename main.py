@@ -1,5 +1,6 @@
 import os
 
+import discord
 from discord.ext import commands
 
 from duty_manager import DutyManager
@@ -11,7 +12,13 @@ from message_scheduler import MessageScheduler
 
 
 def main():
-    bot = commands.Bot(command_prefix=commands.when_mentioned_or("!!"))
+    intents = discord.Intents.none()
+    intents.messages = True
+    intents.reactions = True
+    intents.members = True
+    intents.guilds = True
+
+    bot = commands.Bot(command_prefix=commands.when_mentioned_or("!!"), intents=intents)
 
     # Utility
     bot.add_cog(CSE113Timer(bot))

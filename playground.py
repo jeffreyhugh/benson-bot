@@ -132,12 +132,7 @@ class Playground(commands.Cog):
     @commands.Cog.listener("on_raw_reaction_add")
     async def _on_raw_reaction_add(self, payload):
         guild = self.bot.get_guild(payload.guild_id)
-        channel = guild.get_channel(payload.channel_id)
-        if channel is not None:
-            message = channel.get_message(payload.message_id)
-        else:
-            # I don't care about reactions in DMs
-            return
+        message = guild.get_message(payload.message_id)
 
         user_id = payload.user_id
         emoji = payload.emoji
