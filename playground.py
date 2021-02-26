@@ -21,6 +21,7 @@ class Playground(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.dockerHost = docker.from_env()
+        self.cseguild = 573576119819829249
 
     @commands.command(name="exec", aliases=["execute", "eval", "evaluate"])
     @commands.max_concurrency(1, commands.BucketType.user, wait=False)
@@ -126,3 +127,34 @@ class Playground(commands.Cog):
             await ctx.send("You may only run one instance of this command at a time.")
         else:
             raise error
+
+    @commands.Cog.listener("on_raw_reaction_add")
+    async def _on_raw_reaction_add(self, payload):
+        guild = self.bot.get_guild(payload.guild_id)
+        channel = guild.get_channel(payload.channel_id)
+        if channel is not None:
+            message = channel.get_message(payload.message_id)
+        else:
+            # I don't care about reactions in DMs
+            return
+
+        user_id = payload.user_id
+        emoji = payload.emoji
+
+        if guild.id != self.cseguild:
+            return
+
+        if message.author.id != guild.me.id:
+            return
+
+        if emoji != "🗑️":  # Wastebasket
+            return
+
+        target = guild.get_member(user_id)
+        if target is None:
+            return
+
+        if target in message.mentions:
+            await message.edit("<@{}> [redacted]".format(target.id))
+
+        return
