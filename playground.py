@@ -33,7 +33,7 @@ class Playground(commands.Cog):
         async with ctx.typing():
             code = ""
             lang = ""
-            regexes = ["```(?:python|py)([^^]*?)```", "```(?:c)([^^]*?)```", "```(?:golang|go)([^^]*?)```"]
+            regexes = ["```(?:python|py)([\s\S]*?)```", "```(?:c)([\s\S]*?)```", "```(?:golang|go)([\s\S]*?)```"]
             langs = ["py", "c", "go"]
             i = 0
             while i < len(regexes):
