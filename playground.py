@@ -110,8 +110,9 @@ class Playground(commands.Cog):
                     output = f.read()
                 await ctx.message.remove_reaction("⏳", ctx.guild.me)
                 await ctx.message.add_reaction("✅")
-                await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
+                msg = await ctx.send("<@{}> ```{}```".format(ctx.author.id, output[0:800]),
                                file=discord.File("playground/{}.log".format(ctx.message.id)))
+                await msg.add_reaction("🗑️")
 
             try:
                 os.remove("playground/{}.log".format(ctx.message.id))
