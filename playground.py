@@ -145,7 +145,6 @@ class Playground(commands.Cog):
         if guild.id != self.cseguild:
             return
 
-        print(emoji.name)
         if emoji.name != "🗑️":  # Wastebasket
             return
 
