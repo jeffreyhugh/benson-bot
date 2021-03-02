@@ -27,7 +27,7 @@ class DutyManager(commands.Cog):
 
         self.cseguild = 573576119819829249
         self.role_helpme = 751581791147524119
-        self.digestchannel = 797186419142557737
+        self.digestchannel = 816028777032318996
 
         self.mt = pytz.timezone("America/Denver")
 
