@@ -11,4 +11,7 @@ export BENSONBOT_DISCORD_TOKEN=""
 export BENSONBOT_HCTI_USER=""
 export BENSONBOT_HCTI_TOKEN=""
 
+# Env type determines which cogs are loaded
+export BENSONBOT_ENV_TYPE=""
+
 python3.7 main.py
