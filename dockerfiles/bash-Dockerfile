@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 
 COPY ./playground/$MESSAGE_ID.bash ./main.bash
 
-CMD ["/bin/bash", "main.bash"]
+CMD ["/usr/bin/bash", "main.bash"]
