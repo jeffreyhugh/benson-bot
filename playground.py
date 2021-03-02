@@ -35,8 +35,8 @@ class Playground(commands.Cog):
             code = ""
             lang = ""
             regexes = ["```(?:python|py)([\s\S]*?)```", "```(?:c)([\s\S]*?)```", "```(?:golang|go)([\s\S]*?)```",
-                       "```(?:bash|sh)([\s\S]*?)```"]
-            langs = ["py", "c", "go", "bash"]
+                       "```(?:bash|sh)([\s\S]*?)```", "```(?:zsh)([\s\S]*?)```"]
+            langs = ["py", "c", "go", "bash", "zsh"]
             i = 0
             while i < len(regexes):
                 r = re.compile(regexes[i])
