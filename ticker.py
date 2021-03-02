@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands, tasks
 
-
 class Ticker(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
