@@ -26,7 +26,7 @@ class Playground(commands.Cog):
     @commands.command(name="exec", aliases=["execute", "eval", "evaluate"])
     @commands.max_concurrency(1, commands.BucketType.user, wait=False)
     async def _exec(self, ctx):
-        """Execute a code snippet and post the result. Supports Python, C, Go, and Bash.
+        """Execute a code snippet and post the result. Supports Python, C, Go, Bash, and ZSH.
 
         To differentiate between languages, use a syntax-highlighted code block. In Discord, that's three backticks (`) and the language, then a newline.
 
