@@ -1,0 +1,9 @@
+FROM alpine:3.13.2
+
+ARG MESSAGE_ID
+
+WORKDIR /usr/src/app
+
+COPY ./playground/$MESSAGE_ID.bash ./main.bash
+
+CMD ["/bin/bash", "main.bash"]
