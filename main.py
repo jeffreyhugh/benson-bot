@@ -34,6 +34,7 @@ def main():
         print("Unknown environment ({})".format(env))
         return
 
+    print("Starting with env {}".format(env))
     bot.run(os.getenv("BENSONBOT_DISCORD_TOKEN"))
 
 
