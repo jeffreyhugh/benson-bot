@@ -4,7 +4,7 @@ RUN apk add rust
 
 ARG MESSAGE_ID
 
-WORKDIR /root
+WORKDIR /usr/src/app
 
 COPY ./playground/$MESSAGE_ID.rust ./main.rs
 
