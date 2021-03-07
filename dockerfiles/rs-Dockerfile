@@ -1,6 +1,4 @@
-FROM alpine:3.13.2
-
-RUN apk add rust
+FROM rust:1.50.0-alpine3.12 
 
 ARG MESSAGE_ID
 
