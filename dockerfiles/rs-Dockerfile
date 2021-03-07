@@ -6,7 +6,7 @@ ARG MESSAGE_ID
 
 WORKDIR /usr/src/app
 
-COPY ./playground/$MESSAGE_ID.rust ./main.rs
+COPY ./playground/$MESSAGE_ID.rs ./main.rs
 
 RUN rustc ./main.rs
 CMD [ "./main" ]
