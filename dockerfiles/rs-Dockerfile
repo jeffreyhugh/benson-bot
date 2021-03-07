@@ -1,0 +1,12 @@
+FROM alpine:3.13.2
+
+RUN apk add rust
+
+ARG MESSAGE_ID
+
+WORKDIR /usr/src/app
+
+COPY ./playground/$MESSAGE_ID.rs ./main.rs
+
+RUN rustc ./main.rs
+CMD [ "./main" ]

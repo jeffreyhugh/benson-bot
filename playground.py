@@ -26,7 +26,7 @@ class Playground(commands.Cog):
     @commands.command(name="exec", aliases=["execute", "eval", "evaluate"])
     @commands.max_concurrency(1, commands.BucketType.user, wait=False)
     async def _exec(self, ctx):
-        """Execute a code snippet and post the result. Supports Python, C, Go, Bash, and ZSH.
+        """Execute a code snippet and post the result. Supports Python, C, Go, Bash, ZSH, and Rust.
 
         To differentiate between languages, use a syntax-highlighted code block. In Discord, that's three backticks (`) and the language, then a newline.
 
@@ -35,8 +35,8 @@ class Playground(commands.Cog):
             code = ""
             lang = ""
             regexes = ["```(?:python|py)([\s\S]*?)```", "```(?:c)([\s\S]*?)```", "```(?:golang|go)([\s\S]*?)```",
-                       "```(?:bash|sh)([\s\S]*?)```", "```(?:zsh)([\s\S]*?)```"]
-            langs = ["py", "c", "go", "bash", "zsh"]
+                       "```(?:bash|sh)([\s\S]*?)```", "```(?:zsh)([\s\S]*?)```", "```(?:rust|rs)([\s\S]*?)```"]
+            langs = ["py", "c", "go", "bash", "zsh", "rs"]
             i = 0
             while i < len(regexes):
                 r = re.compile(regexes[i])
