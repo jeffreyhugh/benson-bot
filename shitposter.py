@@ -11,6 +11,7 @@ class Shitposter(commands.Cog):
         self.general_channel = 612329169011081219
         self.botspam = 758793612229083178
         self.arch_emoji = "<:arch:744787585779630171>"
+        self.benson_emoji = "<:benson:827281034609164288>"
 
     @commands.Cog.listener("on_ready")
     async def on_ready(self):
@@ -21,6 +22,9 @@ class Shitposter(commands.Cog):
         if message.author.id != self.bot.user.id:
             # if "benson" in message.content.lower() and (message.channel.id in self.meme_channels or message.guild is None):
             #    await message.channel.send(benson, delete_after=10)
+
+            if "benson" in message.content.lower() and (message.channel.id in self.meme_channels or message.guild is None):
+                await message.add_reaction(self.benson_emoji)
 
             if "arch linux" in message.content.lower() and (
                     message.channel.id in self.meme_channels or message.guild is None):
