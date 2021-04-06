@@ -30,6 +30,13 @@ def main():
 
         bot.add_cog(Playground(bot))
 
+    elif env.upper() == "TESTING":
+        from scoreboard import Scoreboard
+        from shitposter import Shitposter
+
+        bot.add_cog(Scoreboard(bot))
+        bot.add_cog(Shitposter(bot))
+
     else:
         print("Unknown environment ({})".format(env))
         return
