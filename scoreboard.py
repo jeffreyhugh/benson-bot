@@ -15,9 +15,9 @@ async def is_manager(ctx):
 class Scoreboard(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.cseguild = 453071081432023042
-        self.sections = {"blue": 510109263809740800,
-                         "silver": 828876182413770763}
+        self.cseguild = 573576119819829249
+        self.sections = {"blue": 746255950129659944,
+                         "silver": 801144890348142593}
         self.tz = pytz.timezone("America/Denver")
 
         self.conn = sqlite3.connect("hamdy.db")
