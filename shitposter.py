@@ -1,3 +1,5 @@
+import re
+
 from discord.ext import commands
 
 
@@ -7,7 +9,7 @@ class Shitposter(commands.Cog):
 
         self.benson = "https://cdn.discordapp.com/attachments/612329169011081219/750120697556238387/benson.jpg"
         self.meme_channels = [612019519673597962, 612329169011081219, 621180351573917712, 614623979898011659,
-                              613137801629794394]
+                              613137801629794394, 510109263809740800]
         self.general_channel = 612329169011081219
         self.botspam = 758793612229083178
         self.arch_emoji = "<:arch:744787585779630171>"
@@ -23,10 +25,13 @@ class Shitposter(commands.Cog):
             # if "benson" in message.content.lower() and (message.channel.id in self.meme_channels or message.guild is None):
             #    await message.channel.send(benson, delete_after=10)
 
-            if "benson" in message.content.lower() and (message.channel.id in self.meme_channels or message.guild is None):
+            benson_regex = re.compile(r"\bbenson\b", re.IGNORECASE)
+            if len(benson_regex.findall(message.content)) != 0 and (
+                    message.channel.id in self.meme_channels or message.guild is None):
                 await message.add_reaction(self.benson_emoji)
 
-            if "arch linux" in message.content.lower() and (
+            arch_regex = re.compile(r"\barch linux\b", re.IGNORECASE)
+            if len(arch_regex.findall(message.content)) != 0 and (
                     message.channel.id in self.meme_channels or message.guild is None):
                 await message.add_reaction(self.arch_emoji)
 
